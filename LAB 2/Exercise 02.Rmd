@@ -1,0 +1,92 @@
+---
+title: "LAB 02"
+author: "Nana Ama Obeng Nti"
+date: "September 23, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(MASS)
+cars <- Cars93
+```
+
+
+## QUESTION 1a
+
+Manufacturer and Model for cheapest car (Price) based of car types
+
+```{r}
+Price.min <- tapply(cars$Price, cars$Type, min)
+Price.min
+
+cheap.price <- cars[c(74, 20, 47, 31, 46, 16), c(1:3, 5)]
+cheap.price
+```
+
+## QUESTION 1b
+
+Manufacturer  and Model for car with the greatest fuel efficiency (MPG.highway) for each car type
+
+```{r}
+MPG.max <- tapply(cars$MPG.highway, cars$Type, max)
+MPG.max
+
+max <- cars[c(12,7,71,77,20,6,69,39,40,56), c(1:3,8)]
+max
+```
+
+## QUESTION 2a
+
+Mean Horsepower for each car type
+
+```{r}
+Horsepower.mean <- tapply(cars$Horsepower, cars$Type, mean)
+Horsepower.mean
+```
+
+## QUESTION 2b
+
+Differnce between each cars Horsepower and mean for its type. ii) Skewness and Kurtosis for each car type based on the difference.
+
+```{r, include=FALSE}
+library(moments)
+```
+
+
+```{r}
+cars$Horsepower.mean <- Horsepower.mean[cars$Type]
+cars$Horsepower.diff <- cars$Horsepower - cars$Horsepower.mean
+skewness(cars$Horsepower.diff)
+kurtosis(cars$Horsepower.diff)
+```
+
+
+## QUESTION 3
+
+Dataframes for USA and non-USA cars
+
+```{r}
+USA.df <- cars[cars$Origin == "USA", ]
+USA.df
+
+NUSA.df <- cars[cars$Origin == "non-USA", ]
+NUSA.df
+```
+
+## QUESTION 4
+
+Saving USA cars to file with write.csv()
+
+```{r}
+write.csv(USA.df, file = "USA.csv", row.names = FALSE)
+
+read.csv("USA.csv")
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
