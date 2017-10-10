@@ -1,0 +1,217 @@
+---
+title: "LAB 04"
+author: "Nana Ama Obeng Nti"
+output:
+  html_document:
+    toc: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##QUESTION 1
+The number of points scored by each team in a tournament is normally distributed, with
+mean = 32 and standard deviation = 7. What is the probability of:
+
+###Question 1a.i
+A team scoring 20 points or fewer? 
+
+```{r}
+less.20 <- pnorm(20,32,7)
+less.20
+```
+
+###Question 1a.ii
+Plot the density function and shade the area. 
+
+```{r}
+curve(dnorm(x, mean = 32, sd = 7), from = 11, to = 53)
+pt.x <- c(11,seq(11,20,by=0.01),20)
+pt.y <- c(0, dnorm(seq(11,20,by=0.01),mean = 32,sd = 7),0)
+polygon(pt.x, pt.y,col = "blue")
+```
+
+###Question 1b.i
+A team scoring more than 35 points 
+
+```{r}
+more.35 <- pnorm(35,32,7,lower.tail = F)
+more.35
+```
+
+###Question 1b.ii
+Plot the density function and shade the area.
+
+```{r}
+curve(dnorm(x,32,7),from = 11, to = 53)
+pt.x <- c(35,seq(35,53,0.01),53)
+pt.y <- c(0,dnorm(seq(35,53,0.01),32,7),0)
+polygon(pt.x,pt.y,col = "blue")
+```
+
+###Question 1c.i
+A team scoring between 20 and 40 points 
+
+```{r}
+btwn <- diff(pnorm(c(20,40),32,7))
+btwn
+```
+
+###Question 1c.ii
+Plot the density function and shade the area
+
+```{r}
+curve(dnorm(x,32,7),from = 11, to = 53)
+pt.x <- c(20,seq(20,40,0.01),40)
+pt.y <- c(0, dnorm(seq(20,40,0.01),32,7),0)
+polygon(pt.x,pt.y,col = "blue")
+```
+
+##QUESTION 2
+The number of comments per post on a social media site is exponentially distributed, with the
+average post receiving ten comments. What percentage of posts get
+
+###Question 2a.i
+Fewer than three comments
+
+```{r}
+few.3 <- pexp(3,rate = 1/10)
+few.3
+```
+
+###Question 2a.ii
+Plot the density function and shade the area
+
+```{r}
+curve(dexp(x, rate = 1/10),from = 0, to = 100)
+pt.x <- c(0,seq(0,3,by=0.01),3)
+pt.y <- c(0,dexp(seq(0,3,0.01),rate = 1/10),0)
+polygon(pt.x,pt.y,col = "blue")
+```
+
+###Question 2b.i
+More than 20 comments
+
+```{r}
+more.20 <- pexp(20,1/10,lower.tail = F)
+more.20
+```
+
+###Question 2b.ii
+Plot the density function and shade the area
+
+```{r}
+curve(dexp(x,1/10),from = 0, to = 100)
+pt.x <- c(20,seq(20,100,0.01),100)
+pt.y <- c(0,dexp(seq(20,100,0.01),1/10),0)
+polygon(pt.x,pt.y,col = "blue")
+```
+
+###Question 2c.i
+Between five and ten comments
+
+```{r}
+btwn <- diff(pexp(c(5,10),1/10))
+btwn
+```
+
+###Question 2c.ii
+Plot the density function and shade the area
+
+```{r}
+curve(dexp(x,1/10),from = 0, to = 100)
+pt.x <- c(5,seq(5,10,0.01),10)
+pt.y <- c(0,dexp(seq(5,10,0.01),1/10),0)
+polygon(pt.x,pt.y,col = "blue")
+```
+
+##QUESTION 3
+Basic raster creation and calculation
+
+###Question 3a.i
+Create a first raster (30 rows and 30 columns) and assign values to the raster based on random values from a uniform distribution
+
+```{r, message=FALSE, warning=FALSE}
+library(raster)
+set.seed(10)
+ras.1 <- raster(nrows=30,ncols=30,xmn=0,xmx=30,ymn=0,ymx=30)
+ras.1
+```
+
+###Question 3a.ii
+Plot the raster and the histogram.
+
+```{r}
+ras.1[] = runif(ncell(ras.1))
+plot(ras.1)
+hist(ras.1, main = "RANDOM UNIFORM DISTRIBUTION", col = "blue", density = 15)
+
+```
+
+###Question 3b.i
+Create a second raster (30 rows and 30 columns) and assign values to the raster based on random values from a normal distribution
+
+```{r}
+set.seed(100)
+ras.2 <- raster(nrows=30,ncols=30,xmn=0,xmx=30,ymn=0,ymx=30)
+ras.2
+```
+
+###Question 3b.ii
+Plot the raster and the histogram
+
+```{r}
+ras.2[] = rnorm(ncell(ras.2))
+plot(ras.2)
+hist(ras.2, main = "RANDOM NORMAL DISTRIBUTION", col = "blue", density = 15)
+```
+
+###Question 3c.i
+Create a third raster (30 rows and 30 columns) and assign values to the raster based on cell-by-cell addition of the first raster and the second raster
+
+```{r}
+ras.3 <- ras.1 + ras.2
+ras.3
+```
+
+###Question 3c.ii
+Plot the raster and the histogram
+
+```{r}
+plot(ras.3)
+hist(ras.3, main = "CELL-BY-CELL ADDITION", col = "blue", density = 15)
+```
+
+###Question 3d.i
+Calculate the mean value of the third raster. 
+
+```{r}
+mean(ras.3)
+mn <- cellStats(ras.3,mean)
+mn
+```
+
+###Question 3d.ii
+Reclassify the third raster into a binary image: 1 (cell value > mean value) and 0 (cell value <= mean value)
+
+```{r}
+ras.3[ras.3 <= mn] <- 0
+ras.3[ras.3 > mn] <- 1
+plot(ras.3)
+hist(ras.3, main = "RECLASSIFICATION", col = "blue", density = 15)
+```
+
+###Question 3d.iii
+Save the reclassified image to your working directory as a TIFF image
+
+```{r, message=FALSE, warning=FALSE}
+library(rgdal)
+writeRaster(ras.3, filename = "ras.3.tif", format = "GTiff", overwrite = T)
+read = raster("ras.3.tif")
+```
+
+
