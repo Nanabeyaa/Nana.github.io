@@ -1,0 +1,355 @@
+---
+title: "Geog533 Lab 6 - ANOVA"
+author: "NANA AMA OBENG NTI"
+output: 
+  html_notebook:
+    toc: TRUE
+    toc_float: TRUE
+---
+
+Complete the following exercises in Chapter 6 (Analysis of Variance) of the textbook pages 199-203. For each question, you need to specify the null hypothesis and why you accept or reject the null hypothesis.
+
+
+## Question 1
+This is Exercise 2 in Chapter 6 of the Textbook [R].
+
+### Problem
+Assume that an analysis of variance is conducted for a study where there are $N = 50$ observations and $k = 5$ categories. Fill in the blanks in the following ANOVA table:
+
+|          | Sum of squares  | Degrees of freedom |  Mean square   |       *F*       |
+|----------|-----------------|--------------------|----------------|-----------------|
+| Between  |                 |                    |      116.3     |                 |
+| Within   |       2000      |                    |                |                 |
+| Total    |                 |                    |                |                 |
+
+
+### Solution
+```{r}
+N <- 50
+k <- 5
+
+df1 <- k - 1
+df2 <- N - k
+
+BMS <- 116.3
+BSS <- BMS * df1
+
+WSS <- 2000
+WMS <- WSS / df2
+
+TSS <- BSS + WSS
+
+F.value <- BMS / WMS
+
+q95 <- qf(0.95,df1,df2)
+q95
+
+if(F.value < q95) {
+  print("We cannot reject the null hypothesis")
+} else {
+  print("we reject the null hypothesis")
+}
+
+print("We reject the null hypothesis because the F.value falls within the Rejection Region, thus it is greater than the Critical Value making it less likely for the observations to be equal.")
+```
+
+|          | Sum of squares  | Degrees of freedom |  Mean square   |       *F*       |
+|----------|-----------------|--------------------|----------------|-----------------|
+| Between  |`r BSS`          |        `r df1`     |      116.3     |`r F.value`      |
+| Within   |       2000      |        `r df2`     |`r WMS`         |                 |
+| Total    |`r TSS`          |                    |                |                 |
+
+
+
+
+## Question 2
+This is Exercise 6 in Chapter 6 of the Textbook [R].
+
+### Problem 
+Is there a significant difference between the distances moved by low- and high-income individuals? Twelve respondents in each of the income categories are interviewed, with the following results for the distances associated with residential moves:
+
+| Respondent  | Low income  | High income |
+|-------------|-------------|-------------|
+|     1       |      5      |     25      |
+|     2       |      7      |     24      |
+|     3       |      9      |     8       |
+|     4       |      11     |     2       |
+|     5       |      13     |     11      |
+|     6       |      8      |     10      |
+|     7       |      10     |     10      |
+|     8       |      34     |     66      |
+|     9       |      17     |     113     |
+|     10      |      50     |     1       |
+|     11      |      17     |     3       |
+|     12      |      25     |     5       |
+|     Mean    |      17.17  |     23.17   |
+|  Std. dev.  |      13.25  |     33.45   |
+
+
+Test the null hypothesis of homogeneity of variances by forming the ratio $s_1^2 / s_2^2$ which has an F-ratio with $n_1 – 1$ and $n_2 – 1$ degrees of freedom. Then use ANOVA (with $\alpha = 0.10$) to test whether there are differences in the two population means. Set up the null and alternative hypotheses, choose a value of α and a test statistic, and test the null hypothesis. What assumption of the test is likely not satisfied?
+
+### Solution
+```{r}
+Low <- L <- c(5,7,9,11,13,8,10,34,17,50,17,25)
+High <- c(25,24,8,2,11,10,10,66,113,1,3,5)
+s1 <- 13.25^2
+s2 <- 33.45^2
+ratio <- s1 / s2
+ratio
+F.ratio <- df(0.90,11,11)
+F.ratio
+
+df <- data.frame(cbind(Low,High))
+df
+
+income <- stack(df)
+income
+
+##Homogeneity of Variance
+##Ho: Population Variance are Equal
+library(car)
+H.test <- leveneTest(values~ind, data = income)
+H.test
+print("Since p.value is 0.3234, we accept the null hypothesis that the population variance are equal.")
+
+##Difference in Population Mean
+result <- aov(values~ind,data = income)
+summary(result)
+
+##Critcal Value = q90 (with $\alpha = 0.10$)
+q90 <- qf(0.90,1,24)
+q90
+print("Since the Critical value is greater than the F.value, we can conclude that there are no differences in the two population means and accept the null hypothesis.")
+
+## ASSUMPTION NOT LIKELY MET
+#Ho:There is no significant difference between the distances moved by low- and high-income individuals
+result <- kruskal.test(Low,High)
+result
+if(result$p.value>0.05) {
+  print("We cannot reject the null hypothesis")
+} else {
+  print("we reject the null hypothesis")
+}
+
+norm1 <- shapiro.test(Low)
+norm1
+if(norm1$p.value>0.05) {
+  print("the assumption of normality is satisfied")
+} else {
+  print("the assumption of normality not satisfied")
+}
+
+norm2 <- shapiro.test(High)
+norm2
+if(norm2$p.value>0.05) {
+  print("the assumption of normality is satisfied")
+} else {
+  print("the assumption of normality not satisfied")
+}
+
+
+
+```
+
+
+## Question 3
+This is Exercise 9 in Chapter 6 of the Textbook [R].
+
+### Problem
+A sample is taken of incomes in three neighborhoods, yielding the following data: 
+
+|          |        A        |          B         |       C        | Overall (Combined sample) |
+|----------|-----------------|--------------------|----------------|---------------------------|
+| N        |        12       |          10        |        8       |             30            |
+| Mean     |       43.2      |          34.3      |        27.2    |             35.97         |
+| Std. dev.|       36.2      |          20.3      |        21.4    |             29.2          |
+
+
+Use analysis of variance (with α = 0.05) to test the null hypothesis that the means are equal.
+
+
+### Solution
+```{r}
+library(MASS)
+A <- mvrnorm(12,43.2,36.2^2,empirical=T)
+B <- mvrnorm(10,34.3,20.3^2,empirical=T)
+C <- mvrnorm(8,27.2,21.4^2,empirical=T)
+
+income <- c(A,B,C)
+groups <- c(rep("A",12),rep("B",10),rep("C",8))
+df <- data.frame(income,groups)
+
+result <- aov(income~groups,data = df)
+summary(result)
+
+##Difference in Mean level 
+TukeyHSD(result)
+plot(TukeyHSD(result))
+
+p.value <- pf(0.804,2,27,lower.tail = F)
+p.value
+
+
+
+if(p.value>0.05) {
+  print("We cannot reject the null hypothesis")
+} else {
+  print("we reject the null hypothesis")
+}
+
+print("We cannot reject the null hypothesis that the mean are equal because the p.value of 0.458 (likelihood of equality) is higher than 0.05. There is no significant difference between the means")
+
+```
+
+
+
+## Question 4
+This is Exercise 10 in Chapter 6 of the Textbook [R].
+
+### Problem
+Use the Kruskal–Wallis test (with α = 0.05) to determine whether you should reject the null hypothesis that the means of the four columns of data are equal:
+
+|   Col 1  |       Col 2     |        Col 3       |       Col 4    |
+|----------|-----------------|--------------------|----------------|
+|   23.1   |       43.1      |        56.5        |       10002.3  |
+|   13.3   |       10.2      |        32.1        |       54.4     |
+|   15.6   |       16.2      |        43.3        |       8.7      |
+|   1.2    |       0.2       |        24.4        |       54.4     |
+
+
+### Solution
+```{r}
+col.1 <- c(23.1,13.3,15.6,1.2)
+col.2 <- c(43.1,10.2,16.2,0.2)
+col.3 <- c(56.5,32.1,43.3,24.4)
+col.4 <- c(10002.3,54.4,8.7,54.4)
+
+df <- data.frame(cbind(col.1,col.2,col.3,col.4))
+df
+col <- stack(df)
+col
+result <- kruskal.test(values~ind,data = col)
+result
+
+if(result$p.value>0.05) {
+  print("We cannot reject the null hypothesis")
+} else {
+  print("we reject the null hypothesis")
+}
+
+print("We cannot reject the null hypothesis that the mean are equal because the p.value of 0.094 (likelihood of equality) is higher than 0.05. There is no significant difference between the means")
+```
+
+
+## Question 5
+This is Exercise 12 in Chapter 6 of the Textbook [R].
+
+### Problem
+A researcher wishes to know whether distance traveled to work varies by income. Eleven individuals in each of three income groups are surveyed. The resulting data are as follows (in commuting miles, one-way):
+
+```{r}
+## This is the script to generate the table. Do not write your answer inside in this block.
+Observations <- seq(1:11)
+Low <- c(5,4,1,2,3,10,6,6,4,12,11)
+Medium <- c(10,10,8,6,5,3,16,20,7,3,2)
+High <- c(8,11,15,19,21,7,7,4,3,17,18)
+
+df <- data.frame(Observations,Low,Medium,High)
+library(knitr)
+kable(df)
+```
+
+Use analysis of variance (with α = 0.05) to test the hypothesis that commuting distances do not vary by income. Also evaluate (using R and the Levene test) the assumption of homoscedasticity. Finally, lump all of the data together and produce a histogram, and comment on whether the assumption of normality appears to be satisfied.
+
+
+### Solution
+```{r}
+Low <- c(5,4,1,2,3,10,6,6,4,12,11)
+Medium <- c(10,10,8,6,5,3,16,20,7,3,2)
+High <- c(8,11,15,19,21,7,7,4,3,17,18)
+
+df <- data.frame(cbind(Low,High,Medium))
+df
+dist <- stack(df)
+dist
+
+result <- aov(values~ind,data = dist)
+summary(result)
+TukeyHSD(result)
+plot(TukeyHSD(result))
+
+p.value <- pf(3.493,2,30,lower.tail = F)
+p.value
+
+if(p.value>0.05) {
+  print("We cannot reject the null hypothesis")
+} else {
+  print("we reject the null hypothesis")
+}
+
+#ASSUMPTION OF HOMOSCEDASTICITY
+H.test <- leveneTest(values~ind,data = dist)
+H.test
+
+print("Since p.value is 0.1318, the assumption of homoscedasticity is satisfied.")
+
+#Histogram and Normality Test
+hist(values)
+norm <- shapiro.test(values)
+norm
+
+if(norm$p.value>0.05) {
+  print("the assumption of normality is satisfied")
+} else {
+  print("the assumption of normality not satisfied")
+}
+
+
+```
+
+
+## Question 6
+This is Exercise 13 in Chapter 6 of the Textbook [R].
+
+### Problem
+Data are collected on automobile ownership by surveying residents in central cities, suburbs and rural areas. The results are:
+
+|                      | Central cities  |      Suburbs       |  Rural areas   |
+|----------------------|-----------------|--------------------|----------------|
+|Number of observations|      10         |        15          |       15       |
+|      mean            |      1.5        |        2.6         |       1.2      |
+|      Std. dev        |      1.0        |        1.1         |       1.2      |  
+|Overall mean: 1.725   |                 |                    |                |  
+|Overall std.dev: 1.2  |                 |                    |                |   
+
+
+Test the null hypothesis that the means are equal in all three areas.
+
+### Solution
+```{r}
+C <- mvrnorm(10,1.5,1^2,empirical = T)
+S <- mvrnorm(15,2.6,1.1^2,empirical = T)
+R <- mvrnorm(15,1.2,1.2^2,empirical = T)
+
+x <- c(C,S,R)
+y <- c(rep("C",10),rep("S",15),rep("R",15))
+df <- data.frame(x,y)
+df
+
+result <- aov(x~y,data = df)
+summary(result)
+TukeyHSD(result)
+plot(TukeyHSD(result))
+
+p.value <- pf(6.381,2,37,lower.tail = F)
+p.value
+
+if(p.value>0.05) {
+  print("We cannot reject null the hypothesis")
+} else {
+  print("We reject the null hypothesis")
+}
+
+print("We reject the null hypothesis that the mean are equal because the p.value of 0.00416 (likelihood of equality) is less than 0.05. There is a significant difference between the means")
+```
+
