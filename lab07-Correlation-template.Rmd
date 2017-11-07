@@ -1,0 +1,422 @@
+---
+title: "Geog533 Lab 7 - Correlation"
+author: "Nana Ama Obeng Nti"
+output: 
+  html_notebook:
+    toc: TRUE
+    toc_float: TRUE
+---
+
+## Question 1
+This is Exercise 1 in Chapter 7 of the Textbook [R].
+
+### Problem 1a
+Find the correlation coefficient, *r*, for the following sample data on income and education:
+```{r}
+library(knitr)
+obs <- seq(1:5)
+income <- c(30,28,52,40,35)
+edu <- c(12,13,18,16,17)
+df <- data.frame(obs,income,edu)
+names(df) <- c("Observation","Income ($*1000)","Education (Years)")
+kable(df)
+```
+
+Solution 1a
+```{r}
+r <- cor(df$`Income ($*1000)`, df$`Education (Years)`)
+r
+```
+
+
+### Problem 1b
+Test the null hypothesis ρ = 0.
+
+Solution 1b
+```{r}
+r <- cor.test(df$`Income ($*1000)`, df$`Education (Years)`)
+r
+if(r$p.value>0.05) {
+  print("We cannot reject the null hypothesis.")
+} else {
+  print("We reject the null hypothesis.")
+}
+
+print("We cannot reject the null hypothesis that the true correlation is equal to zero because the p.value is greater than 0.05")
+```
+
+
+### Problem 1c
+Find Spearman’s rank correlation coefficient for these data.
+
+Solution 1c
+```{r}
+cor <- cor(df$`Income ($*1000)`, df$`Education (Years)`, method = "spearman")
+cor
+```
+
+
+### Problem 1d
+Test whether the observed value of rs from part (c) is significantly different from zero.
+
+Solution 1d
+```{r}
+cor <- cor.test(df$`Income ($*1000)`, df$`Education (Years)`, method = "spearman")
+cor
+if(cor$p.value>0.05) {
+  print("We cannot reject the null hypothesis.")
+} else {
+  print("We reject the null hypothesis.")
+}
+
+print("We cannot reject the null hypothesis that the true correlation is equal to zero because the p.value is greater than 0.05")
+```
+
+
+
+## Question 2
+This is Exercise 3 in Chapter 7 of the Textbook [R].
+
+### Problem
+The distribution of the t-statistic for testing the significance of a correlation coefficient has n – 2 degrees of freedom. If the sample size is 36 and α = 0.05, what is the smallest absolute value a correlation coefficient must have to be significant? What if the sample size is 80?
+
+### Solution.a
+```{r}
+##SAMPLE SIZE IS 36
+n <- 36
+r.crit <- 2/sqrt(n)
+r.crit
+
+print("When the sample size is 36, the smallest absolute value a correlation coefficient must have to be significant is 0.333333")
+
+```
+###Solution.b
+```{r}
+#SAMPLE SIZE IS 80
+n <- 80
+r.crit <- 2/sqrt(n)
+r.crit
+
+print("When the sample size is 80, the smallest absolute value a correlation coefficient must have to be significant is 0.2236068")
+```
+
+
+
+## Question 3
+This is Exercise 4 in Chapter 7 of the Textbook [R].
+
+### Problem
+Find the correlation coefficient for the following data:
+
+```{r}
+library(knitr)
+Obs <- seq(1:4)
+X <- c(2,8,9,7)
+Y <- c(6,6,10,4)
+df <- data.frame(Obs,X,Y)
+kable(df)
+```
+
+### Solution
+```{r}
+r.3 <- cor.test(df$X,df$Y,method = "pearson")
+r.3
+if(r.3$p.value>0.05){
+  print("We cannot reject the null hypothesis")
+}else{
+  print("We reject the null hypothesis")
+}
+
+print("We cannot reject the null hypothesis that the true correlation is equal to zero because the p.value is greater than 0.05")
+```
+
+
+
+## Question 4
+This is Exercise 6 in Chapter 7 of the Textbook [R].
+
+### Problem
+Find the correlation coefficient between median annual income in the United States and the number of horse races won by the leading jockey, for the period 1984–1995. Test the hypothesis that the true correlation coefficient is equal to zero. Interpret your results.
+
+```{r}
+year <- 1984:1994
+income <- c(35165,35778,37027,37256,37512,37997,37343,36054,35593,35241,35486)
+races <- c(399,469,429,450,474,598,364,430,433,410,317)
+df <- data.frame(year,income,races)
+names(df) <- c("Year","Median income","Number of races won by leading jockey")
+kable(df)
+```
+
+
+### Solution
+```{r}
+r.4 <- cor.test(df$`Median income`,df$`Number of races won by leading jockey`)
+r.4
+if(r.4$p.value>0.05){
+  print("We cannot reject the null hypothesis")
+}else{
+  print("We reject the null hypothesis")
+}
+
+print("We cannot reject the null hypothesis that the true correlation is equal to zero because the p.value is greater than 0.05")
+
+##INTERPRET YOUR RESULTS
+n <- 11
+r.crit <- 2/sqrt(n)
+r.crit
+
+print("Eventhough the null hypothesis is accepted, the correlation coefficient of 0.558 is not significant. This is because, a sample size of 11 must have a correlation coefficient of at least 0.603 to be considered significant.")
+```
+
+
+
+## Question 5
+This is Exercise 7 in Chapter 7 of the Textbook [R].
+
+### Problem
+For the following ranked data, find Spearman’s r, and then test the null hypothesis (using a Type I error probability of 0.10) that the true correlation is equal to zero.
+
+```{r}
+library(knitr)
+obs <- 1:6
+x <- c(1,2,5,6,11,12)
+y <- c(8,4,12,3,10,7)
+df <- data.frame(obs,x,y)
+names(df) <- c("Observation","Rank of x","Rank of y")
+kable(df)
+```
+
+
+### Solution
+```{r}
+r.5 <- cor.test(df$`Rank of x`,df$`Rank of y`,method = "spearman",conf.level = 0.90)
+r.5
+if(r.5$p.value>0.1){
+  print("We cannot reject the null hypothesis")
+}else{
+  print("We reject the null hypothesis")
+}
+
+print("We cannot reject the null hypothesis that the true correlation is equal to zero because the p.value is greater than 0.05")
+```
+
+
+
+## Question 6
+This is Exercise 8 in Chapter 7 of the Textbook [R].
+
+### Problem
+Find Pearson’s r for the following data, and then test the null hypothesis that the correlation coefficient is equal to zero. Use a Type I error probability of 0.05.
+
+```{r}
+library(knitr)
+obs <- 1:6
+x <- c(3.2,2.4,1.6,8.3,7.2,5.1)
+y <- c(6.2,7.3,8.1,2.6,6.3,4.3)
+df <- data.frame(obs,x,y)
+names(df) <- c("Observation","x","y")
+kable(df)
+```
+
+
+### Solution
+```{r}
+r.6 <- cor.test(df$x,df$y,method = "pearson")
+r.6
+if(r.6$p.value>0.05){
+  print("We cannot reject the null hypothesis")
+}else{
+  print("We reject the null hypothesis")
+}
+
+print("We cannot reject the null hypothesis that the true correlation is equal to zero because the p.value is greater than 0.05")
+```
+
+
+## Question 7
+This is Exercise 9 in Chapter 7 of the Textbook [R].
+
+### Problem
+Using R and the Milwaukee dataset, find the correlation between number of bedrooms and lot size.
+
+### Solution
+```{r}
+df <- read.csv("Milwaukee_Sales.csv",header = T)
+df
+r.7 <- cor.test(df$Bedrms,df$LotSize)
+r.7
+if(r.7$p.value>0.05){
+  print("We cannot reject the null hypothesis")
+}else{
+  print("We reject the null hypothesis")
+}
+
+print("We cannot reject the null hypothesis that the true correlation is equal to zero because the p.value is greater than 0.05")
+```
+
+
+## Question 8
+This is Exercise 10 in Chapter 7 of the Textbook [R].
+
+### Problem
+Using R and the Hypothetical UK Housing Prices dataset, find the correlation between floor area and number of bedrooms.
+
+### Solution
+```{r}
+df <- read.csv("UK_Housing.csv",header = T)
+df
+r.8 <- cor.test(df$floorarea,df$bedrooms)
+r.8
+if(r.8$p.value>0.05){
+  print("We cannot reject the null hypothesis")
+}else{
+  print("We reject the null hypothesis")
+}
+
+print("We reject the null hypothesis that the true correlation is equal to zero because the p.value is less than 0.05")
+```
+
+
+## Question 9
+Use the **cars** data frame in the **datasets** package to perform the following tasks: 
+
+### Problem 9a
+Plot a scatterplot for the data frame (x: speed, y: dist)
+
+Solution 9a
+```{r}
+library(datasets)
+df <- cars
+plot(df,xlab="Speed",ylab="dist",col="blue")
+```
+
+
+### Problem 9b
+How many rows in the data frame?
+
+Solution 9b
+```{r}
+n <- nrow(df)
+n
+```
+
+
+### Problem 9c
+Calculate Pearson’s correlation coefficient using the equation below:
+$$r=\frac{\sum_{n}^{i=1}(x_i-\bar{x})(y_i-\bar{y})}{(n-1)s_{x}s_{y}}$$
+
+Solution 9c
+```{r}
+library(datasets)
+df <- cars
+
+speed <- df$speed
+spd.mn<- mean(speed)
+spd.mn
+dist <- df$dist
+dis.mn <- mean(dist)
+dis.mn
+
+sd1 <- sd(speed)
+sd1
+sd2 <- sd(dist)
+sd <- sd1 * sd2
+sd
+n <- 50
+n1 <- n - 1
+n1
+
+num <- sum((speed - spd.mn)*(dist - dis.mn))
+num
+deno <-  n1 * sd
+deno
+
+r <- num / deno
+r
+
+t <- r * sqrt (n - 2) / sqrt(1-r^2)
+t
+
+t.crit <- qt(0.975, df = n-2)
+t.crit
+
+print("We reject the null hypothesis that the true correlation is equal to zero, since the observed value of t (9.46) is greater than the critical value of 2.01")
+```
+
+
+### Problem 9d
+Use the cor.test() function to find Pearson’s correlation coefficient and compare it to the one from part (c)
+
+Solution 9d
+```{r}
+r <- cor(df$speed, df$dist, method = "pearson")
+r
+result <- cor.test(df$speed,df$dist, method = "pearson")
+result
+if(result$p.value>0.05){
+  print("We cannot reject the null hypothesis")
+}else{
+  print("We reject the null hypothesis")
+}
+
+print("We reject the null hypothesis that the true correlation is equal to zero because the p.value is less than 0.05")
+
+print("9d and 9c produce the same correlation coefficient output")
+```
+
+
+### Problem 9e
+Calculate Spearman’s rank correlation coefficient using the equation below:
+$$r_{S} = 1 - \frac{6\sum_{i=1}^{n}d_{i}^{2}}{n^3-n}$$
+
+Solution 9e
+```{r}
+library(datasets)
+df <- cars
+df
+n <- nrow(df)
+
+df$rank.sp <- rank(df$speed)
+df$rank.ds <- rank(df$dist)
+
+df$d <- df$rank.sp - df$rank.ds
+df$d2 <- df$d^2
+
+sum.d2 <- sum(df$d2)
+sum.d2
+
+num <- 6 * sum.d2
+num
+
+deno <- n^3 - n
+deno
+
+x <- num / deno
+x
+
+rs <- 1 - x
+rs
+```
+
+
+
+### Problem 9f
+Use the cor.test() function to find Spearman’s rank correlation coefficient and compare it to the one from part (e)
+
+Solution 9f
+```{r}
+rs <- cor(df$speed, df$dist, method = "spearman")
+rs
+result1 <- cor.test(df$speed,df$dist, method = "spearman")
+result1
+if(result1$p.value>0.05){
+  print("We cannot reject the null hypothesis")
+}else{
+  print("We reject the null hypothesis")
+}
+
+print("We reject the null hypothesis that the true correlation is equal to zero because the p.value is less than 0.05")
+
+print("9e and 9f produce the same correlation coefficient output")
+```
+
