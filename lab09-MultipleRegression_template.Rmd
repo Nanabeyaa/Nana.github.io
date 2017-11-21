@@ -1,0 +1,226 @@
+---
+title: "Geog533 Lab 9"
+author: "Nana Ama Obeng Nti"
+output: 
+  html_notebook:
+    toc: TRUE
+    toc_float: TRUE
+---
+
+Complete the following exercises in Chapter 9 (More on Regression) of the textbook pages 286-287. 
+
+
+## Question 1
+
+This is Exercise 7 in Chapter 9 of the Textbook [R].
+
+The following results were obtained from a regression of $n = 14$ housing prices (in dollars) on median family income, size of house, and size of lot:
+
+```{r, echo=FALSE}
+library(knitr)
+col1 <- c("Regression SS:","Residual SS:","Total SS:")
+col2 <- c("4234","3487","")
+col3 <- c("3","","")
+col4 <- c("","","")
+col5 <- c("","","")
+df <- cbind(col1,col2,col3,col4,col5)
+colnames(df) <- c("","Sum of squares","df","Mean square","F")
+kable(df)
+```
+
+```{r, echo=FALSE}
+library(knitr)
+col1 <- c("Median family income","Size of house (sq.ft)","Size of lot (sq.ft)","Constant")
+col2 <- c("1.57","23.4","-9.5","40,000")
+col3 <- c("0.34","11.2","7.1","1000")
+col4 <- c("1.3","2.9","11.3","")
+df <- cbind(col1,col2,col3,col4)
+colnames(df) <- c("","Coefficient (b)","Standard error (sb)","VIF")
+kable(df)
+```
+
+
+### Question 1(a)
+Fill in the blanks.
+
+```{r}
+SSM <- 4234
+SSR <- 3487
+SST <- SSM+SSR
+n <- 14
+df1 <- 3
+df2 <- n-4
+df3 <- df1+df2
+MMS <- SSM/df1
+RMS <- SSR/df2
+F <- MMS/RMS
+```
+
+
+
+|          | Sum of squares  | Degrees of freedom |  Mean square   |       *F*       |
+|----------|-----------------|--------------------|----------------|-----------------|
+|Regression|  `r SSM`        |    `r df1`         |  `r MMS`       |    `r F`        |
+| Residual |   `r SSR`       |    `r df2`         |  `r RMS`       |                 |
+| Total    |    `r SST`      |  `r df3`           |                |                 |
+
+
+
+### Question 1(b)
+What is the value of $r^2$? 
+
+```{r}
+R2 <- SSM/SST
+R2
+```
+
+
+### Question 1(c)
+What is the standard error of the estimate? 
+
+```{r}
+std.err <- sqrt(RMS)
+std.err
+```
+
+
+### Question 1(d)
+Test the null hypothesis that $R^2 = 0$ by comparing the $F-statistic$ from the table with its critical value. 
+```{r}
+F <- MMS/RMS
+F
+F.Crt <- qf(0.95,df1,df2)
+F.Crt
+if(F>F.Crt){
+  print("We reject the null hypothesis")
+}else{
+  print("We cannot reject the null hypothesis")
+}
+```
+
+
+### Question 1(e)
+Are the coefficients in the direction you would hypothesize? If not, which coefficients are opposite in sign from what you would expect? 
+
+```{r}
+print("No. The coefficient of Size of lot is opposite in sign from what I expect")
+```
+
+
+### Question 1(f)
+Find the $t-statistics$ associated with each coefficient, and test the null hypotheses that the coefficients are equal to zero. Use $ \alpha = 0.05$, and be sure to give the critical value of $t$. 
+
+```{r}
+t.crt <- qt(0.975,df2)
+t.crt
+t.crt2 <- qt(0.025,df2)
+t.crt2
+
+income <- 1.57/0.34
+income
+s.house <- 23.4/11.2
+s.house
+s.lot <- -9.5/7.1
+s.lot
+constant <- 40000/1000
+constant
+```
+
+
+### Question 1(g)
+What do you conclude from the variance inflation factors (VIFs)? What (if any) modifications would you recommend in light of the VIFs? 
+
+```{r}
+print("The VIF of size of lot (11.3) is greater than 5, this indicates potential multicollinearity. I recommend size of lot to be removed")
+```
+
+
+### Question 1(h)
+What is the predicted sales price of a house that is 1500 square feet, on a lot 60´×100´, and in a neighborhood where the median family income is $40,000?
+
+```{r}
+prdt.price <- 40000 +  1.57*40000 + 23.4*1500 + (-9.5)*6000
+prdt.price
+```
+
+
+
+## Question 2
+
+This is Exercise 10 in Chapter 9 of the Textbook [R].
+
+### Question 2(a)
+Using R and the [Hypothetical UK Housing Prices dataset](http://spatial.binghamton.edu/geog533/data/UK_Housing.csv), construct a regression equation using housing price as the dependent variable, and bedrooms, bathrooms, date built, garage, fireplace, floor area, and whether the home is detached as the independent variables. Investigate the importance of multicollinearity and outliers. Comment on the weaknesses of this specification, and on the results. 
+
+```{r}
+df <- read.csv("UK_Housing.csv")
+df1 <- data.frame(df[,c(2:9)])
+
+reg <- lm(price~.,data=df1)
+summary(reg)
+confint(reg)
+anova(reg)
+
+library(car)
+vif(reg)
+print("since the VIF of all the variables are less than 5, there is no multicollinearity")
+
+plot(reg)
+print("Outliers on the graphs are 374, 209 and 301")
+
+##WEAKNESS
+print("Bedrooms and Bathrooms are not significant because their regression model p.value is greater than 0.05")
+```
+
+
+### Question 2(b)
+Attempt to improve the regression equation found in (a). Justify your decisions in constructing and carrying out the analysis.
+
+```{r}
+new.reg <- lm(price~garage + datebuilt + floorarea + detached + fireplace,data=df1)
+summary(new.reg)
+
+print("To improve regression equation, insignificant variables such as bedroom and bathroom has been excluded from the equation")
+```
+
+
+
+## Question 3
+
+This is Exercise 11 in Chapter 9 of the Textbook [R].
+
+### Question 3(a)
+
+Using R and the [Milwaukee dataset](http://spatial.binghamton.edu/geog533/data/Milwaukee_Sales.csv) described in Section 1.9.2, construct a regression equation using housing sales price as the dependent variable, and number of bedrooms, lot size, finished square footage in the house, age of house, and number of bathrooms, as the independent variables. Investigate the importance of multicollinearity and outliers. Comment on the weaknesses of this specification, and on the results. 
+
+```{r}
+df2 <- read.csv("Milwaukee_Sales.csv")
+df3 <- data.frame(df2[,c(2:5,7,9)])
+
+model <- lm(SalePrice~.,data = df3)
+summary(model)
+confint(model)
+anova(model)
+
+library(car)
+vif(model)
+print("since the VIF of all the variables are less than 5, there is no multicollinearity")
+
+plot(model)
+print("Outliers the graphs are 145, 143 and 161")
+
+##WEAKNESS
+print("Age is not significant because it has a p.value > 0.05")
+```
+
+
+### Question 3(b)
+Attempt to improve the regression equation found in (a). Justify your decisions in constructing and carrying out the analysis.
+
+```{r}
+new.model <- lm(SalePrice~FinSqft+Bedrms+Baths+LotSize,data=df3)
+summary(new.model)
+
+print("To improve regression equation, Age has been taken out of the equation since it is an insignificant variable")
+```
+
