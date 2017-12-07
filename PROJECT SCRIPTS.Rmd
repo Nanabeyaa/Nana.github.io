@@ -9,10 +9,13 @@ output:
 
 ##R-ArcGIS BRIDGE
 ###Composing Maps
-
-```{r message=FALSE, warning=FALSE}
+```{r}
 library(arcgisbinding)
 arc.check_product()
+```
+
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 
 Data <- arc.open('C:\\Data\\Newdata.gdb\\STATES')
 Data_df <- arc.select(Data,fields = "*")
@@ -45,6 +48,8 @@ test <- cor.test(df$IMR,df$POVERTY,conf.level = 0.95)
 }else{
   print("We reject the null hypothesis")
 }
+  
+print("Thus, we reject the null hypothesis that there is no correlation between infant mortality and poverty rate")  
 ```
 
 ##TESTING SIGNIFICANCE OF CORRELATION COEFFICIENT 
