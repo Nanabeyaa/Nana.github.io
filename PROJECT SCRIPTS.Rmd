@@ -1,0 +1,126 @@
+---
+title: "Geog533 - Final Project Codes"
+author: "Nana Ama Obeng Nti"
+output: 
+  html_notebook:
+    toc: TRUE
+    toc_float: TRUE
+---
+
+##R-ArcGIS BRIDGE
+###Composing Maps
+
+```{r message=FALSE, warning=FALSE}
+library(arcgisbinding)
+arc.check_product()
+
+Data <- arc.open('C:\\Data\\Newdata.gdb\\STATES')
+Data_df <- arc.select(Data,fields = "*")
+
+Data_df$IMR <- (Data_df$Number_of_Deaths/Data_df$Number_of_Birth)*1000
+Data_df$Percent_Death <- (Data_df$Number_of_Deaths/Data_df$Number_of_Birth)*100
+
+Data_spdf <- arc.data2sp(Data_df)
+
+arc.write('C:\\STATS\\DATA.gdb\\USA_BOUNDARY',Data_spdf)
+```
+
+
+##CORRELATION COEFFICIENT
+```{r}
+##CORRELATION COEFFICIENT
+df <- read.csv("Infant Mortality_poverty.csv", header = TRUE)
+cor <- cor(df$IMR,df$POVERTY)
+cor
+
+plot(x=df$POVERTY,y=df$IMR,xlab="Poverty Rate",ylab="Infant Mortality Rate",pch=16,col="blue",main = "INFANT MORTALITY RATE vs POVERTY RATE IN THE US")
+```
+
+##TESTING HYPOTHESIS
+```{r}
+test <- cor.test(df$IMR,df$POVERTY,conf.level = 0.95)
+  test
+  if(test$p.value>0.1){
+  print("We cannot reject the null hypothesis")
+}else{
+  print("We reject the null hypothesis")
+}
+```
+
+##TESTING SIGNIFICANCE OF CORRELATION COEFFICIENT 
+```{r}
+##Finding Minimum Absolute value for correlation coefficient
+n <- 49
+2/sqrt(n)
+print("Correlation coefficient of 0.63 can be said to be significant since it is greater than the minimum absolute value 0.29")
+```
+
+
+##IMPORTING CORRELATION TO ARCMAP
+```{r message=FALSE, warning=FALSE}
+
+tool_exec <- function(in_params, out_params){
+  
+  library(arcgisbinding)
+  arc.check_product()
+  arc.progress_label('Loading ArcGIS Binding Package...')
+  arc.progress_pos(20)
+  
+  input <- in_params[[1]]
+  output <- out_params[[1]]
+  
+    arc.progress_label('Performing CORRELATION...')
+  arc.progress_pos(75)
+  
+  df <- read.csv("Infant Mortality_poverty.csv", header = TRUE)
+  cor <- cor(df$IMR,df$POVERTY)
+  cor
+  test <- cor.test(df$IMR,df$POVERTY,conf.level = 0.95)
+  test
+  print(test)
+  
+  plot(df,pch=16,col="blue",xlab = "Poverty Rate", ylab = "Infant Mortality Rate", main = "INFANT MORTALITY RATE vs POVERTY RATE IN THE US")
+  
+  return(out_params)
+}
+```
+
+##CREATING INTERACTIVE MAPS
+
+###Infant Mortality Rate Map
+```{r message=FALSE, warning=FALSE}
+library(googleVis)
+require(datasets)
+states <- read.csv("Infant Mortality.csv", header = TRUE)
+
+GeoStates <- gvisGeoChart(states, "Name", "Infant.Mortality",
+                          options=list(region="US", 
+                                       displayMode="regions", 
+                                       resolution="provinces",
+                                       width=600, height=400))
+Table <- gvisTable(states,
+                   options = list(width=220, height=300))
+
+Both <- gvisMerge(GeoStates,Table,horizontal = TRUE)
+
+plot(Both)
+```
+
+
+###Poverty Rate Map
+```{r}
+states <- read.csv("Poverty.csv", header = TRUE)
+
+GeoStates <- gvisGeoChart(states, "Name", "POVERTY",
+                          options=list(region="US", 
+                                       displayMode="regions", 
+                                       resolution="provinces",
+                                       width=600, height=400))
+Table <- gvisTable(states,
+                   options = list(width=220, height=300))
+
+Both <- gvisMerge(GeoStates,Table,horizontal = TRUE)
+
+plot(Both)
+```
+
